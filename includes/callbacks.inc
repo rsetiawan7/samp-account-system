@@ -1,0 +1,9 @@
+public OnFilterScriptInit()
+{
+  
+}
+
+public OnFilterScriptExit()
+{
+  
+}
