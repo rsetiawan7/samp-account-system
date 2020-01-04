@@ -1,6 +1,3 @@
-// Number of iterations to make a strong password.
-#define ITERATIONS 1000
-
 // Macros.
 #define MAX_CHARACTERS_PER_ACCOUNT  1
 #define MAX_ACCOUNT_NAME_LENGTH     42
@@ -8,6 +5,10 @@
 #define MAX_SALT_LENGTH             128
 #define MIN_PASSWORD_LENGTH         8
 #define MAX_PASSWORD_LENGTH         64
+
+#if !defined isnull
+    #define isnull(%1) ((!(%1[0])) || (((%1[0]) == '\1') && (!(%1[1]))))
+#endif
 
 // Trying to include y_iterate with a few ways.
 #if !defined _INC_y_iterate
@@ -131,38 +132,66 @@ hook OnFilterScriptExit()
     CloseAccountSystem();
 }
 
-AddPlayerAccount(const username[], const password[], const email[]) {
+remotefunc CreatePlayerAccount(const string:username[], const string:password[], const string:email[]) {
+    // Debugging purpose.
+    new string:params[MAX_PLAYER_NAME + MAX_PASSWORD_LENGTH + MAX_EMAIL_LENGTH + 1];
+    format(params, sizeof(params), "Params found: %s %s %s", username, password, email);
+    
+    P:4("CreatePlayerAccount -> called. %s", params);
+
     // Username must be filled.
     if (isnull(username))
     {
+        P:4("CreatePlayerAccount -> username null. %s", params);
         return E_USERNAME_REQUIRED;
     }
 
     // Password must be filled.
     if (isnull(password))
     {
+        P:4("CreatePlayerAccount -> password null. %s", params);
         return E_PASSWORD_REQUIRED;
     }
 
     // E-mail address must be filled.
     if (isnull(email))
     {
+        P:4("CreatePlayerAccount -> email null. Params %s", params);
         return E_EMAIL_REQUIRED;
     }
 
     // Password's length must be more than MIN_PASSWORD_LENGTH characters.
     if (strlen(password) < MIN_PASSWORD_LENGTH)
     {
+        P:4("CreatePlayerAccount -> insufficient password length (min: "#MIN_PASSWORD_LENGTH"). %s", params);
         return E_INSUFFICIENT_PASSWORD_LENGTH;
     }
 
     // Password's length must be less than MAX_PASSWORD_LENGTH characters.
     if (strlen(password) > MAX_PASSWORD_LENGTH)
     {
+        P:4("CreatePlayerAccount -> exceeded password length (max: "#MAX_PASSWORD_LENGTH"). %s", params);
         return E_EXCEED_PASSWORD_LENGTH;
     }
 
-    return _AddPlayerAccount(username, password, email);
+    return _CreatePlayerAccount(username, password, email);
+}
+
+remotefunc CreateCharacterAccount(const account_id, const string:nickname[]) {
+    // Account ID must be filled.
+    if (account_id == 0)
+    {
+        return E_ACCOUNT_ID_REQUIRED;
+    }
+
+    // Nickname must be filled.
+    if (isnull(nickname))
+    {
+        return E_NICKNAME_REQUIRED;
+    }
+
+    return 1;
+    // return _CreatePlayerAccount(username, password, email);
 }
 
 ResetPlayerAccount(playerid)
@@ -312,8 +341,8 @@ remotefunc SetPlayerData(playerid, const string:data[], const string:value[])
         return E_PLAYER_DATA_NAME_INVALID;
     }
 
-    // Return 1 IF success.
-    return 1;
+    // Return 0 IF success.
+    return 0;
 }
 
 remotefunc LoadPlayerCharacter(playerid)
@@ -400,7 +429,7 @@ remotefunc LogOutFromPlayerAccount(playerid)
 
     // Reset player's account.
     ResetPlayerAccount(playerid);
-    return 1;
+    return 0;
 }
 
 remotefunc SavePlayerCharacterData(playerid)
