@@ -14,7 +14,10 @@
 		"YSI-Coding/y_remote",
 		"YSI-Coding/y_timers",
 		"Mellnik/hash-plugin",
-		"YSI-Core/y_testing"
+		"YSI-Core/y_testing",
+		"maddinat0r/sscanf",
+		"YSI-Server/y_colours",
+		"YSI-Core/y_master"
 	],
 	"runtime": {
 		"version": "0.3.7",
