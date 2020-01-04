@@ -88,7 +88,8 @@ InitAccountSystem()
         }
     }
 
-    return 1;
+    // Return 0 IF success.
+    return 0;
 }
 
 CloseAccountSystem()
@@ -121,7 +122,7 @@ IsPasswordValid(const username[], const password[])
     if (!IsAvailable)
     {
         // Immediately return IF there's no account with that name.
-        return IsAvailable;
+        return 1;
     }
 
     // Get the hashed password from the query result.
@@ -136,7 +137,7 @@ IsPasswordValid(const username[], const password[])
     CurrentHash = HashPassword(password, PrivateSalt);
 
     // Verify the hash by compare the string.
-    return strcmp(CurrentHash, HashedPass);
+    return strcmp(CurrentHash, HashedPass) == 0 ? 0 : 2;
 }
 
 _LoadPlayerCharacter(playerid)
@@ -154,12 +155,12 @@ _LoadPlayerCharacter(playerid)
     // Check if the query result return a valid result.
     IsAvailable = db_num_rows(result) < 1 ? false : true;
 
-    // Return 0 IF query result not found.
+    // Return 1 IF query result not found.
     if (!IsAvailable)
     {
         // Frees the result
         db_free_result(result);
-        return 0;
+        return 1;
     }
     
     // Store number of characters available.
@@ -188,15 +189,17 @@ _LoadPlayerCharacter(playerid)
     db_free_result(result);
 
     // Return number of characters available in that account.
-    return c + 1;
+    return 0;
 }
 
-_AddPlayerAccount(const username[], const password[], const email[]) {
+_CreatePlayerAccount(const username[], const password[], const email[]) {
     const queryLen = MAX_ACCOUNT_NAME_LENGTH
                     + WHIRLPOOL_LENGTH
                     + MAX_SALT_LENGTH
                     + MAX_EMAIL_LENGTH
                     + 128;
+
+    P:D("_CreatePlayerAccount called. Params: %s %s %s", username, password, email);
 
     // Store query result.
     static
@@ -208,8 +211,10 @@ _AddPlayerAccount(const username[], const password[], const email[]) {
 
     // Format the query and escape the string to avoid SQL injection.
     format (query, sizeof(query), "SELECT * FROM `accounts` WHERE `name` = '%q';", username);
+    P:D("_CreatePlayerAccount -> query to check available user: %s", query);
     // Do the query.
     result = db_query(db_account, query);
+    P:D("_CreatePlayerAccount -> query result: %i rows", db_num_rows(result));
     // Check if the query result return a valid result.
     IsAvailable = db_num_rows(result) < 1 ? false : true;
     // Frees the result
@@ -223,12 +228,8 @@ _AddPlayerAccount(const username[], const password[], const email[]) {
 
     // Generate a random string for salt.
     random_string(sizeof(salt), salt, sizeof(salt));
-    format (query, sizeof(query), "INSERT INTO `accounts` "\
-                                "(`name`,`password`,`salt`,`email`) "\
-                                "VALUES "\
-                                "('%q','%q','%q','%q');\"
-                                , username, HashPassword(password, salt), salt, email);
-    print(query);
+    format (query, sizeof(query), "INSERT INTO `accounts` (`name`,`password`,`salt`,`email`) VALUES ('%q','%q','%q','%q');", username, HashPassword(password, salt), salt, email);
+    P:D("_CreatePlayerAccount -> query to insert a new account: %s", query);
 
     db_free_result(db_query(db_account, query));
 
@@ -308,5 +309,5 @@ _SavePlayerCharacterData(playerid)
     db_free_result(result);
 
     // Return the number of affected row.
-    return IsSuccess;
+    return 0;
 }
