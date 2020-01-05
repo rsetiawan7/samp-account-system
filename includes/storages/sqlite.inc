@@ -228,7 +228,12 @@ _CreatePlayerAccount(const username[], const password[], const email[]) {
 
     // Generate a random string for salt.
     random_string(sizeof(salt), salt, sizeof(salt));
-    format (query, sizeof(query), "INSERT INTO `accounts` (`name`,`password`,`salt`,`email`) VALUES ('%q','%q','%q','%q');", username, HashPassword(password, salt), salt, email);
+
+    // Hash the password with the salt
+    format(hashedPass, sizeof(hashedPass), "%s", HashPassword(password, salt));
+
+    // Make the query.
+    format (query, sizeof(query), "INSERT INTO `accounts` (`name`,`password`,`salt`,`email`) VALUES ('%q','%q','%q','%q');", username, hashedPass, salt, email);
     P:D("_CreatePlayerAccount -> query to insert a new account: %s", query);
 
     db_free_result(db_query(db_account, query));
@@ -303,7 +308,7 @@ _SavePlayerCharacterData(playerid)
     // Do the query.
     result = db_query(db_account, query);
     // Check if the query result return a valid result.
-    IsSuccess = db_num_rows(result);
+    // IsSuccess = db_num_rows(result);
 
     // Frees the result
     db_free_result(result);
