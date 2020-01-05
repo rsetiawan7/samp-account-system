@@ -1,3 +1,8 @@
+// y_master
+#define MASTER 1
+#define YSI_IS_SERVER
+#include <YSI-Core/y_master>
+
 // Macros.
 #define MAX_CHARACTERS_PER_ACCOUNT  1
 #define MAX_ACCOUNT_NAME_LENGTH     42
@@ -19,12 +24,12 @@
 #endif
 
 // Trying to include y_remote with a few ways.
-#if !defined _INC_y_remote
-    #tryinclude <YSI-Coding\y_remote>
-#endif
-#if !defined _INC_y_remote
-    #error "y_remote (YSI 4.x) is required."
-#endif
+// #if !defined _INC_y_remote
+//     #tryinclude <YSI-Coding\y_remote>
+// #endif
+// #if !defined _INC_y_remote
+//     #error "y_remote (YSI 4.x) is required."
+// #endif
 
 // Trying to include hash-plugin with a few ways.
 #if !defined _hash_included
@@ -39,6 +44,9 @@
 
 // Include internal's error codes.
 #include "includes/errors.inc"
+
+// Include foreign functions.
+#include "includes/foreigns.inc"
 
 // Enumeration for accout's player
 enum e_PlayerAccount
@@ -123,7 +131,7 @@ hook OnFilterScriptExit()
         P:4("Saving player data with Player ID: %i ...", playerid);
 
         // Save each player's character that logged in and selected a character.
-        new saveable = localfunc SavePlayerCharacterData(playerid);
+        new saveable = SavePlayerCharacterData(playerid);
 
         P:4("Save player data with Player ID: %i result --> %i", saveable);
     }
@@ -132,7 +140,7 @@ hook OnFilterScriptExit()
     CloseAccountSystem();
 }
 
-remotefunc CreatePlayerAccount(const string:username[], const string:password[], const string:email[]) {
+global CreatePlayerAccount(const string:username[], const string:password[], const string:email[]) {
     // Debugging purpose.
     new string:params[MAX_PLAYER_NAME + MAX_PASSWORD_LENGTH + MAX_EMAIL_LENGTH + 1];
     format(params, sizeof(params), "Params found: %s %s %s", username, password, email);
@@ -174,10 +182,11 @@ remotefunc CreatePlayerAccount(const string:username[], const string:password[],
         return E_EXCEED_PASSWORD_LENGTH;
     }
 
+    P:4("CreatePlayerAccount -> passed all criteria.");
     return _CreatePlayerAccount(username, password, email);
 }
 
-remotefunc CreateCharacterAccount(const account_id, const string:nickname[]) {
+global CreateCharacterAccount(const account_id, const string:nickname[]) {
     // Account ID must be filled.
     if (account_id == 0)
     {
@@ -212,17 +221,17 @@ ResetPlayerAccount(playerid)
     Iter_Remove(LoggedInPlayers, playerid);
 }
 
-remotefunc bool:IsPlayerLoggedIn(playerid)
+global bool:IsPlayerLoggedIn(playerid)
 {
     return PlayerAccount[playerid][AID] < 1 ? false : true;
 }
 
-remotefunc bool:IsPlayerCharacterSelected(playerid)
+global bool:IsPlayerCharacterSelected(playerid)
 {
     return PlayerAccount[playerid][CharacterActive] < 0 ? false : true;
 }
 
-remotefunc GetPlayerData(playerid, const string:data[])
+global GetPlayerData(playerid, const string:data[])
 {
     // Check the playerid's connection.
     if (!IsPlayerConnected(playerid))
@@ -231,7 +240,7 @@ remotefunc GetPlayerData(playerid, const string:data[])
     }
 
     // Check IF the player has logged in.
-    if (!localfunc IsPlayerLoggedIn(playerid))
+    if (!IsPlayerLoggedIn(playerid))
     {
         return E_PLAYER_NOT_LOGGED_IN;
     }
@@ -243,7 +252,7 @@ remotefunc GetPlayerData(playerid, const string:data[])
     }
 
     // Check IF the player has a selected character.
-    if (!localfunc IsPlayerCharacterSelected(playerid))
+    if (!IsPlayerCharacterSelected(playerid))
     {
         return E_PLAYER_CHARACTER_INVALID;
     }
@@ -281,7 +290,7 @@ remotefunc GetPlayerData(playerid, const string:data[])
     return E_PLAYER_DATA_NAME_INVALID;
 }
 
-remotefunc SetPlayerData(playerid, const string:data[], const string:value[])
+global SetPlayerData(playerid, const string:data[], const string:value[])
 {
     // Check the playerid's connection.
     if (!IsPlayerConnected(playerid))
@@ -290,7 +299,7 @@ remotefunc SetPlayerData(playerid, const string:data[], const string:value[])
     }
 
     // Check IF the player has logged in.
-    if (!localfunc IsPlayerLoggedIn(playerid))
+    if (!IsPlayerLoggedIn(playerid))
     {
         return E_PLAYER_NOT_LOGGED_IN;
     }
@@ -302,7 +311,7 @@ remotefunc SetPlayerData(playerid, const string:data[], const string:value[])
     }
 
     // Check IF the player has a selected character.
-    if (!localfunc IsPlayerCharacterSelected(playerid))
+    if (!IsPlayerCharacterSelected(playerid))
     {
         return E_PLAYER_CHARACTER_INVALID;
     }
@@ -345,7 +354,7 @@ remotefunc SetPlayerData(playerid, const string:data[], const string:value[])
     return 0;
 }
 
-remotefunc LoadPlayerCharacter(playerid)
+global LoadPlayerCharacter(playerid)
 {
     // Check the playerid's connection.
     if (!IsPlayerConnected(playerid))
@@ -354,7 +363,7 @@ remotefunc LoadPlayerCharacter(playerid)
     }
 
     // Check IF the player has logged in.
-    if (!localfunc IsPlayerLoggedIn(playerid))
+    if (!IsPlayerLoggedIn(playerid))
     {
         return E_PLAYER_NOT_LOGGED_IN;
     }
@@ -362,7 +371,7 @@ remotefunc LoadPlayerCharacter(playerid)
     return _LoadPlayerCharacter(playerid);
 }
 
-remotefunc LogInPlayerAccount(playerid, const string:username[], const string:password[])
+global LogInPlayerAccount(playerid, const string:username[], const string:password[])
 {
     #if !defined RUN_TESTS
     // Check the playerid's connection.
@@ -373,7 +382,7 @@ remotefunc LogInPlayerAccount(playerid, const string:username[], const string:pa
     #endif
 
     // Check IF the player has already logged in.
-    if (localfunc IsPlayerLoggedIn(playerid))
+    if (IsPlayerLoggedIn(playerid))
     {
         return E_PLAYER_ALREADY_LOGGED_IN;
     }
@@ -411,7 +420,7 @@ remotefunc LogInPlayerAccount(playerid, const string:username[], const string:pa
     return _LoadPlayerAccount(playerid, username);
 }
 
-remotefunc LogOutFromPlayerAccount(playerid)
+global LogOutFromPlayerAccount(playerid)
 {
     #if defined RUN_TESTS
     // Check the playerid's connection.
@@ -422,7 +431,7 @@ remotefunc LogOutFromPlayerAccount(playerid)
     #endif
 
     // Check IF the player has logged in.
-    if (!localfunc IsPlayerLoggedIn(playerid))
+    if (!IsPlayerLoggedIn(playerid))
     {
         return E_PLAYER_NOT_LOGGED_IN;
     }
@@ -432,7 +441,7 @@ remotefunc LogOutFromPlayerAccount(playerid)
     return 0;
 }
 
-remotefunc SavePlayerCharacterData(playerid)
+global SavePlayerCharacterData(playerid)
 {
     // Check the playerid's connection.
     if (!IsPlayerConnected(playerid))
@@ -441,13 +450,13 @@ remotefunc SavePlayerCharacterData(playerid)
     }
 
     // Check IF the player has logged in.
-    if (!localfunc IsPlayerLoggedIn(playerid))
+    if (!IsPlayerLoggedIn(playerid))
     {
         return E_PLAYER_NOT_LOGGED_IN;
     }
 
     // Check IF the player already select a valid character.
-    if (!localfunc IsPlayerCharacterSelected(playerid))
+    if (!IsPlayerCharacterSelected(playerid))
     {
         return E_PLAYER_CHARACTER_INVALID;
     }
@@ -458,7 +467,7 @@ remotefunc SavePlayerCharacterData(playerid)
 
     format(timestamp, sizeof(timestamp), "%i", gettime());
     // Set UpdatedAt data to current time.
-    localfunc SetPlayerData(playerid, "UpdatedAt", timestamp);
+    SetPlayerData(playerid, "UpdatedAt", timestamp);
 
     // Save the player current character's data.
     return _SavePlayerCharacterData(playerid);

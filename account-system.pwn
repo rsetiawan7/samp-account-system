@@ -35,6 +35,8 @@ public OnScriptInit()
   print("         Written by");
   print("         rsetiawan7");
   print("----------------------------------\n");
+
+  return 1;
 }
 
 // Commands

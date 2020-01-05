@@ -1,5 +1,6 @@
-// #define YSI_IS_CLIENT
-// #define MASTER 1
+#define MASTER 1
+#define YSI_IS_CLIENT
+#include <YSI-Core\y_master>
 
 // #if !defined _Y_MASTER_INCLUDED
 // 	#tryinclude <YSI-Core\y_master>
@@ -8,12 +9,17 @@
 // 	#error "y_master (YSI 4.x) is required to use this script."
 // #endif
 
-#if !defined _INC_y_remote
-	#tryinclude <YSI-Coding\y_remote>
+// #if !defined _INC_y_remote
+// 	#tryinclude <YSI-Coding\y_remote>
+// #endif
+// #if !defined _INC_y_remote
+// 	#error "y_remote (YSI 4.x) is required to use this script."
+// #endif
+
+#if defined ACCOUNT_SYSTEM_ERRORS_INCLUDED
+	#endinput
 #endif
-#if !defined _INC_y_remote
-	#error "y_remote (YSI 4.x) is required to use this script."
-#endif
+#define ACCOUNT_SYSTEM_ERRORS_INCLUDED
 
 #define E_USERNAME_REQUIRED             -10001
 #define E_PASSWORD_REQUIRED             -10002
@@ -30,19 +36,19 @@
 #define E_PLAYER_CHARACTER_INVALID      -20003
 #define E_PLAYER_DATA_NAME_INVALID      -20004
 
-remotefunc bool:IsPlayerLoggedIn(playerid){} 
-remotefunc bool:IsPlayerCharacterSelected(playerid){} 
-remotefunc CreatePlayerAccount(const string:username[], const string:password[], const string:email[]){} 
-remotefunc CreateCharacterAccount(const account_id, const string:nickname[]){} 
-remotefunc LoadPlayerData(playerid){} 
-remotefunc LogInPlayerAccount(playerid, const string:username[], const string:password[]){} 
-remotefunc LoadPlayerCharacter(playerid){} 
-remotefunc SetPlayerData(playerid, const string:data[], const string:value[]){} 
-remotefunc LogOutFromPlayerAccount(playerid){} 
-remotefunc SavePlayerCharacterData(playerid){} 
+foreign bool:IsPlayerLoggedIn(playerid);
+foreign bool:IsPlayerCharacterSelected(playerid);
+foreign CreatePlayerAccount(const string:username[], const string:password[], const string:email[]);
+foreign CreateCharacterAccount(const account_id, const string:nickname[]);
+// foreign LoadPlayerData(playerid);
+foreign LogInPlayerAccount(playerid, const string:username[], const string:password[]);
+foreign LoadPlayerCharacter(playerid);
+foreign SetPlayerData(playerid, const string:data[], const string:value[]);
+foreign LogOutFromPlayerAccount(playerid);
+foreign SavePlayerCharacterData(playerid);
 
-stock LogIn(playerid, username[], password[])
-{
-	new result = localfunc LogInPlayerAccount(playerid, username, password);
-	return result;
-}
+// stock LogIn(playerid, username[], password[])
+// {
+// 	new result = localfunc LogInPlayerAccount(playerid, username, password);
+// 	return result;
+// }
