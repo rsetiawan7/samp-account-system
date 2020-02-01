@@ -199,7 +199,7 @@ _CreatePlayerAccount(const username[], const password[], const email[]) {
                     + MAX_EMAIL_LENGTH
                     + 128;
 
-    P:D("_CreatePlayerAccount called. Params: %s %s %s", username, password, email);
+    P:4("_CreatePlayerAccount called. Params: %s %s %s", username, password, email);
 
     // Store query result.
     static
@@ -211,10 +211,10 @@ _CreatePlayerAccount(const username[], const password[], const email[]) {
 
     // Format the query and escape the string to avoid SQL injection.
     format (query, sizeof(query), "SELECT * FROM `accounts` WHERE `name` = '%q';", username);
-    P:D("_CreatePlayerAccount -> query to check available user: %s", query);
+    P:4("_CreatePlayerAccount -> query to check available user: %s", query);
     // Do the query.
     result = db_query(db_account, query);
-    P:D("_CreatePlayerAccount -> query result: %i rows", db_num_rows(result));
+    P:4("_CreatePlayerAccount -> query result: %i rows", db_num_rows(result));
     // Check if the query result return a valid result.
     IsAvailable = db_num_rows(result) < 1 ? false : true;
     // Frees the result
@@ -226,17 +226,33 @@ _CreatePlayerAccount(const username[], const password[], const email[]) {
         return E_USERNAME_EXIST;
     }
 
+    // Format the query and escape the string to avoid SQL injection.
+    format (query, sizeof(query), "SELECT * FROM `accounts` WHERE `email` = '%q';", email);
+    P:4("_CreatePlayerAccount -> query to check available email: %s", query);
+    // Do the query.
+    result = db_query(db_account, query);
+    P:4("_CreatePlayerAccount -> query result: %i rows", db_num_rows(result));
+    // Check if the query result return a valid result.
+    IsAvailable = db_num_rows(result) < 1 ? false : true;
+    // Frees the result
+    db_free_result(result);
+
+    // Return 0 IF query result found.
+    if (IsAvailable)
+    {
+        return E_EMAIL_EXIST;
+    }
+
     // Generate a random string for salt.
     random_string(sizeof(salt), salt, sizeof(salt));
 
-    // Hash the password with the salt
-    format(hashedPass, sizeof(hashedPass), "%s", HashPassword(password, salt));
-
     // Make the query.
-    format (query, sizeof(query), "INSERT INTO `accounts` (`name`,`password`,`salt`,`email`) VALUES ('%q','%q','%q','%q');", username, hashedPass, salt, email);
-    P:D("_CreatePlayerAccount -> query to insert a new account: %s", query);
+    format (query, sizeof(query), "INSERT INTO `accounts` (`name`,`password`,`salt`,`email`) VALUES ('%q','%q','%q','%q');", username, HashPassword(password, salt), salt, email);
+    P:4("_CreatePlayerAccount -> query to insert a new account: %s", query);
 
-    db_free_result(db_query(db_account, query));
+    result = db_query(db_account, query);
+    P:4("_CreatePlayerAccount -> db_num_rows: %i", db_num_rows(result));
+    db_free_result(result);
 
     return 1;
 }
@@ -289,7 +305,7 @@ _SavePlayerCharacterData(playerid)
     // Store query result.
     static
         query[128],
-        IsSuccess,
+        // IsSuccess,
         DBResult:result;
 
     new CA = PlayerAccount[playerid][CharacterActive];
