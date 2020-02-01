@@ -1,7 +1,7 @@
 // y_master
-#define MASTER 1
-#define YSI_IS_SERVER
-#include <YSI-Core/y_master>
+// #define MASTER 1
+// #define YSI_IS_SERVER
+// #include <YSI_Core/y_master>
 
 // Macros.
 #define MAX_CHARACTERS_PER_ACCOUNT  1
@@ -17,19 +17,19 @@
 
 // Trying to include y_iterate with a few ways.
 #if !defined _INC_y_iterate
-    #tryinclude <YSI-Data\y_iterate>
+    #tryinclude <YSI_Data\y_iterate>
 #endif
 #if !defined _INC_y_iterate
     #error "y_iterate (YSI 4.x) is required."
 #endif
 
 // Trying to include y_remote with a few ways.
-// #if !defined _INC_y_remote
-//     #tryinclude <YSI-Coding\y_remote>
-// #endif
-// #if !defined _INC_y_remote
-//     #error "y_remote (YSI 4.x) is required."
-// #endif
+#if !defined _INC_y_remote
+    #tryinclude <YSI_Coding\y_remote>
+#endif
+#if !defined _INC_y_remote
+    #error "y_remote (YSI 4.x) is required."
+#endif
 
 // Trying to include hash-plugin with a few ways.
 #if !defined _hash_included
@@ -46,7 +46,7 @@
 #include "includes/errors.inc"
 
 // Include foreign functions.
-#include "includes/foreigns.inc"
+// #include "includes/foreigns.inc"
 
 // Enumeration for accout's player
 enum e_PlayerAccount
@@ -140,7 +140,7 @@ hook OnFilterScriptExit()
     CloseAccountSystem();
 }
 
-global CreatePlayerAccount(const string:username[], const string:password[], const string:email[]) {
+remotefunc CreatePlayerAccount(const string:username[], const string:password[], const string:email[]) {
     // Debugging purpose.
     new string:params[MAX_PLAYER_NAME + MAX_PASSWORD_LENGTH + MAX_EMAIL_LENGTH + 1];
     format(params, sizeof(params), "Params found: %s %s %s", username, password, email);
@@ -186,7 +186,7 @@ global CreatePlayerAccount(const string:username[], const string:password[], con
     return _CreatePlayerAccount(username, password, email);
 }
 
-global CreateCharacterAccount(const account_id, const string:nickname[]) {
+remotefunc CreateCharacterAccount(const account_id, const string:nickname[]) {
     // Account ID must be filled.
     if (account_id == 0)
     {
@@ -221,17 +221,17 @@ ResetPlayerAccount(playerid)
     Iter_Remove(LoggedInPlayers, playerid);
 }
 
-global bool:IsPlayerLoggedIn(playerid)
+remotefunc bool:IsPlayerLoggedIn(playerid)
 {
     return PlayerAccount[playerid][AID] < 1 ? false : true;
 }
 
-global bool:IsPlayerCharacterSelected(playerid)
+remotefunc bool:IsPlayerCharacterSelected(playerid)
 {
     return PlayerAccount[playerid][CharacterActive] < 0 ? false : true;
 }
 
-global GetPlayerData(playerid, const string:data[])
+remotefunc GetPlayerData(playerid, const string:data[])
 {
     // Check the playerid's connection.
     if (!IsPlayerConnected(playerid))
@@ -290,7 +290,7 @@ global GetPlayerData(playerid, const string:data[])
     return E_PLAYER_DATA_NAME_INVALID;
 }
 
-global SetPlayerData(playerid, const string:data[], const string:value[])
+remotefunc SetPlayerData(playerid, const string:data[], const string:value[])
 {
     // Check the playerid's connection.
     if (!IsPlayerConnected(playerid))
@@ -354,7 +354,7 @@ global SetPlayerData(playerid, const string:data[], const string:value[])
     return 0;
 }
 
-global LoadPlayerCharacter(playerid)
+remotefunc LoadPlayerCharacter(playerid)
 {
     // Check the playerid's connection.
     if (!IsPlayerConnected(playerid))
@@ -371,7 +371,7 @@ global LoadPlayerCharacter(playerid)
     return _LoadPlayerCharacter(playerid);
 }
 
-global LogInPlayerAccount(playerid, const string:username[], const string:password[])
+remotefunc LogInPlayerAccount(playerid, const string:username[], const string:password[])
 {
     #if !defined RUN_TESTS
     // Check the playerid's connection.
@@ -420,7 +420,7 @@ global LogInPlayerAccount(playerid, const string:username[], const string:passwo
     return _LoadPlayerAccount(playerid, username);
 }
 
-global LogOutFromPlayerAccount(playerid)
+remotefunc LogOutFromPlayerAccount(playerid)
 {
     #if defined RUN_TESTS
     // Check the playerid's connection.
@@ -441,7 +441,7 @@ global LogOutFromPlayerAccount(playerid)
     return 0;
 }
 
-global SavePlayerCharacterData(playerid)
+remotefunc SavePlayerCharacterData(playerid)
 {
     // Check the playerid's connection.
     if (!IsPlayerConnected(playerid))
@@ -473,4 +473,4 @@ global SavePlayerCharacterData(playerid)
     return _SavePlayerCharacterData(playerid);
 }
 
-#include <YSI-Coding/y_hooks>
+#include <YSI_Coding/y_hooks>
