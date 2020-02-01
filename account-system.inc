@@ -1,6 +1,6 @@
-#define MASTER 1
-#define YSI_IS_CLIENT
-#include <YSI-Core\y_master>
+// #define MASTER 1
+// #define YSI_IS_CLIENT
+// #include <YSI-Core\y_master>
 
 // #if !defined _Y_MASTER_INCLUDED
 // 	#tryinclude <YSI-Core\y_master>
@@ -31,21 +31,22 @@
 #define E_EMAIL_REQUIRED								-10008
 #define E_ACCOUNT_ID_REQUIRED						-10009
 #define E_NICKNAME_REQUIRED							-10010
+#define E_EMAIL_EXIST   								-10011
 #define E_PLAYER_NOT_LOGGED_IN          -20001
 #define E_PLAYER_ALREADY_LOGGED_IN      -20002
 #define E_PLAYER_CHARACTER_INVALID      -20003
 #define E_PLAYER_DATA_NAME_INVALID      -20004
 
-foreign bool:IsPlayerLoggedIn(playerid);
-foreign bool:IsPlayerCharacterSelected(playerid);
-foreign CreatePlayerAccount(const string:username[], const string:password[], const string:email[]);
-foreign CreateCharacterAccount(const account_id, const string:nickname[]);
-// foreign LoadPlayerData(playerid);
-foreign LogInPlayerAccount(playerid, const string:username[], const string:password[]);
-foreign LoadPlayerCharacter(playerid);
-foreign SetPlayerData(playerid, const string:data[], const string:value[]);
-foreign LogOutFromPlayerAccount(playerid);
-foreign SavePlayerCharacterData(playerid);
+remotefunc bool:IsPlayerLoggedIn(playerid);
+remotefunc bool:IsPlayerCharacterSelected(playerid);
+remotefunc CreatePlayerAccount(const string:username[], const string:password[], const string:email[]);
+remotefunc CreateCharacterAccount(const account_id, const string:nickname[]);
+// remotefunc LoadPlayerData(playerid);
+remotefunc LogInPlayerAccount(playerid, const string:username[], const string:password[]);
+remotefunc LoadPlayerCharacter(playerid);
+remotefunc SetPlayerData(playerid, const string:data[], const string:value[]);
+remotefunc LogOutFromPlayerAccount(playerid);
+remotefunc SavePlayerCharacterData(playerid);
 
 // stock LogIn(playerid, username[], password[])
 // {
