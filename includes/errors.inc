@@ -1,5 +1,5 @@
 #if defined ACCOUNT_SYSTEM_ERRORS_INCLUDED
-	#endinput
+  #endinput
 #endif
 #define ACCOUNT_SYSTEM_ERRORS_INCLUDED
 
@@ -13,6 +13,7 @@
 #define E_EMAIL_REQUIRED								-10008
 #define E_ACCOUNT_ID_REQUIRED						-10009
 #define E_NICKNAME_REQUIRED							-10010
+#define E_EMAIL_EXIST   								-10011
 #define E_PLAYER_NOT_LOGGED_IN          -20001
 #define E_PLAYER_ALREADY_LOGGED_IN      -20002
 #define E_PLAYER_CHARACTER_INVALID      -20003
