@@ -5,19 +5,9 @@
 	"output": "account-system.amx",
 	"dependencies": [
 		"sampctl/samp-stdlib",
-		"YSI-Data/y_bit",
-		"YSI-Server/y_colors",
-		"YSI-Visual/y_commands",
-		"YSI-Core/y_debug",
-		"YSI-Coding/y_hooks",
-		"YSI-Data/y_iterate",
-		"YSI-Coding/y_remote",
-		"YSI-Coding/y_timers",
 		"Mellnik/hash-plugin",
-		"YSI-Core/y_testing",
 		"maddinat0r/sscanf",
-		"YSI-Server/y_colours",
-		"YSI-Core/y_master"
+		"pawn-lang/YSI-Includes@5.x"
 	],
 	"runtime": {
 		"version": "0.3.7",
