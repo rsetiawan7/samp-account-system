@@ -13,7 +13,6 @@ new
 InitAccountSystem()
 {
     P:4("[SQLITE] InitAccountSystem called.");
-    db_debug_openfiles();
 
     // Read .db file.
     db_account = db_open("account-system.db");
@@ -84,7 +83,7 @@ InitAccountSystem()
                 query[216];
 
             // Generate a random string for salt.
-            random_string(sizeof(gSalt), gSalt, sizeof(gSalt));
+            GenerateRandomString(gSalt, sizeof(gSalt));
 
             // Prepare the query.
             format(query, sizeof(query), "INSERT INTO `settings` VALUES ('salt', 'Generate password more unique', '%q');", gSalt);
@@ -103,7 +102,28 @@ CloseAccountSystem()
     if (db_account) db_close(db_account);
 }
 
-IsPasswordValid(const username[], const password[])
+bool:IsUsernameAvailable(const string:username[])
+{
+    // Store query result.
+    static
+        query[128],
+        DBResult:result,
+        bool:IsAvailable;
+
+    // Format the query and escape the string to avoid SQL injection.
+    format (query, sizeof(query), "SELECT `id` FROM `accounts` WHERE `name` = '%q';", username);
+    P:4("[SQLITE] IsUsernameAvailable -> query: %s", query);
+    // Do the query.
+    result = db_query(db_account, query);
+    // Check if the query result return a valid result.
+    IsAvailable = db_num_rows(result) > 0;
+    // Frees the result
+    db_free_result(result);
+
+    return IsAvailable;
+}
+
+bool:IsPasswordValid(const username[], const password[])
 {
     // Store query result.
     static
@@ -114,35 +134,38 @@ IsPasswordValid(const username[], const password[])
         HashedPass[WHIRLPOOL_LENGTH + 1],
         // Hashed password from input password, global salt, and its own salt.
         CurrentHash[WHIRLPOOL_LENGTH + 1],
-        bool:IsAvailable,
         DBResult:result;
+
+    P:4("[SQLITE] IsPasswordValid -> is username available: %d", IsUsernameAvailable(username));
+    // Check username availability.
+    if (!IsUsernameAvailable(username))
+    {
+        return false;
+    }
 
     // Format the query and escape the string to avoid SQL injection.
     format (query, sizeof(query), "SELECT `password`, `salt` FROM `accounts` WHERE `name` = '%q';", username);
     // Do the query.
     result = db_query(db_account, query);
-    // Check if the query result return a valid result.
-    IsAvailable = db_num_rows(result) < 1 ? false : true;
-
-    if (!IsAvailable)
-    {
-        // Immediately return IF there's no account with that name.
-        return 1;
-    }
+    P:4("[SQLITE] IsPasswordValid -> query: %s", query);
 
     // Get the hashed password from the query result.
     db_get_field_assoc(result, "password", HashedPass, sizeof(HashedPass));
+    P:4("[SQLITE] IsPasswordValid -> hashed password: %s", HashedPass);
     // Get private salt from the query result.
     db_get_field_assoc(result, "salt", PrivateSalt, sizeof(PrivateSalt));
+    P:4("[SQLITE] IsPasswordValid -> private salt: %s", PrivateSalt);
 
     // Frees the result
     db_free_result(result);
 
     // Hash the input password by its own salt.
     CurrentHash = HashPassword(password, PrivateSalt);
+    P:4("[SQLITE] IsPasswordValid -> hashed input password: %s", CurrentHash);
 
     // Verify the hash by compare the string.
-    return strcmp(CurrentHash, HashedPass) == 0 ? 0 : 2;
+    P:4("[SQLITE] IsPasswordValid -> hashed input password: %s", (strcmp(CurrentHash, HashedPass) == 0 ? "true" : "false"));
+    return (strcmp(CurrentHash, HashedPass) == 0);
 }
 
 _LoadPlayerCharacter(playerid)
@@ -249,7 +272,7 @@ _CreatePlayerAccount(const username[], const password[], const email[])
     }
 
     // Generate a random string for salt.
-    random_string(sizeof(salt), salt, sizeof(salt));
+    GenerateRandomString(salt, sizeof(salt));
 
     // Make the query.
     format (query, sizeof(query), "INSERT INTO `accounts` (`name`,`password`,`salt`,`email`) VALUES ('%q','%q','%q','%q');", username, HashPassword(password, salt), salt, email);
