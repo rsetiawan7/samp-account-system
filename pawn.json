@@ -5,7 +5,6 @@
 	"output": "../account-system.amx",
 	"dependencies": [
 		"sampctl/samp-stdlib",
-		"Mellnik/hash-plugin",
 		"maddinat0r/sscanf",
 		"pawn-lang/YSI-Includes@5.x"
 	],
