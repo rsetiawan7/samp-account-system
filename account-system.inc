@@ -1,20 +1,9 @@
-// #define MASTER 1
-// #define YSI_IS_CLIENT
-// #include <YSI-Core\y_master>
-
-// #if !defined _Y_MASTER_INCLUDED
-// 	#tryinclude <YSI-Core\y_master>
-// #endif
-// #if !defined _Y_MASTER_INCLUDED
-// 	#error "y_master (YSI 4.x) is required to use this script."
-// #endif
-
-// #if !defined _INC_y_remote
-// 	#tryinclude <YSI-Coding\y_remote>
-// #endif
-// #if !defined _INC_y_remote
-// 	#error "y_remote (YSI 4.x) is required to use this script."
-// #endif
+#if !defined _INC_y_remote
+	#tryinclude <YSI_Coding\y_remote>
+#endif
+#if !defined _INC_y_remote
+	#error "y_remote (YSI 5.x) is required to use this script."
+#endif
 
 #if defined ACCOUNT_SYSTEM_ERRORS_INCLUDED
   #endinput
