@@ -1,8 +1,3 @@
-// y_master
-// #define MASTER 1
-// #define YSI_IS_SERVER
-// #include <YSI_Core/y_master>
-
 // Macros.
 #define MAX_CHARACTERS_PER_ACCOUNT  1
 #define MAX_ACCOUNT_NAME_LENGTH     42
@@ -11,33 +6,21 @@
 #define MIN_PASSWORD_LENGTH         8
 #define MAX_PASSWORD_LENGTH         64
 
-#if !defined isnull
-    #define isnull(%1) ((!(%1[0])) || (((%1[0]) == '\1') && (!(%1[1]))))
+// #if !defined isnull
+//     #define isnull(%1) ((!(%1[0])) || (((%1[0]) == '\1') && (!(%1[1]))))
+// #endif
+
+// Trying to include y_iterate.
+#if !defined _INC_y_iterate
+    #error "y_iterate (YSI 5.x) is required."
 #endif
 
-// Trying to include y_iterate with a few ways.
-#if !defined _INC_y_iterate
-    #tryinclude <YSI_Data\y_iterate>
-#endif
-#if !defined _INC_y_iterate
-    #error "y_iterate (YSI 4.x) is required."
-#endif
-
-// Trying to include y_remote with a few ways.
+// Trying to include y_remote.
 #if !defined _INC_y_remote
-    #tryinclude <YSI_Coding\y_remote>
-#endif
-#if !defined _INC_y_remote
-    #error "y_remote (YSI 4.x) is required."
+    #error "y_remote (YSI 5.x) is required."
 #endif
 
 // Trying to include hash-plugin with a few ways.
-#if !defined _hash_included
-    #tryinclude "hash-plugin\hash"
-#endif
-#if !defined _hash_included
-    #tryinclude <hash>
-#endif
 #if !defined _hash_included
     #error "Mellnik's hash-plugin is required. Get it by 'sampctl package install Mellnik/hash-plugin' or go to https://forum.sa-mp.com/showthread.php?t=496953 or https://github.com/Mellnik/hash-plugin"
 #endif
@@ -103,44 +86,35 @@ new
 
 // ONLY one of method storage allowed and it must defined.
 #if defined USE_MYSQL
-    #include "includes/storages/mysql"
+    #include "includes/storages/mysql.inc"
 #endif
 #if defined USE_SQLITE
-    #include "includes/storages/sqlite"
+    #tryinclude "includes/storages/sqlite.inc"
 #endif
 #if !defined STORAGE_METHOD_INCLUDED
     #error "One of storage method is required. Please #define USE_MYSQL to use MySQL or #define USE_SQLITE to use SQLite."
 #endif
 
-hook OnFilterScriptInit()
+ResetPlayerAccount(playerid)
 {
-    // Initialize iteration for logged in players.
-    Iter_Init(LoggedInPlayers);
+    // Reset player account's ID.
+    PlayerAccount[playerid][AID] = 0;
+    // Reset player's character active.
+    PlayerAccount[playerid][CharacterActive] = -1;
 
-    // Initialize the system. (depends on storage method)
-    InitAccountSystem();
-}
-
-hook OnFilterScriptExit()
-{
-    P:4("Start to save logged in's player data");
-
-    // Loop each logged in players.
-    foreach (new playerid : LoggedInPlayers)
+    // Reset each player character's account ID and character ID.
+    for (new c = 0; c < MAX_CHARACTERS_PER_ACCOUNT; c++)
     {
-        P:4("Saving player data with Player ID: %i ...", playerid);
-
-        // Save each player's character that logged in and selected a character.
-        new saveable = SavePlayerCharacterData(playerid);
-
-        P:4("Save player data with Player ID: %i result --> %i", saveable);
+        PlayerData[playerid][c][AID] = 0;
+        PlayerData[playerid][c][CID] = 0;
     }
 
-    // Close the connection to database.
-    CloseAccountSystem();
+    // Remove player from logged in player's iteration.
+    Iter_Remove(LoggedInPlayers, playerid);
 }
 
-remotefunc CreatePlayerAccount(const string:username[], const string:password[], const string:email[]) {
+remotefunc CreatePlayerAccount(const string:username[], const string:password[], const string:email[])
+{
     // Debugging purpose.
     new string:params[MAX_PLAYER_NAME + MAX_PASSWORD_LENGTH + MAX_EMAIL_LENGTH + 1];
     format(params, sizeof(params), "Params found: %s %s %s", username, password, email);
@@ -186,7 +160,8 @@ remotefunc CreatePlayerAccount(const string:username[], const string:password[],
     return _CreatePlayerAccount(username, password, email);
 }
 
-remotefunc CreateCharacterAccount(const account_id, const string:nickname[]) {
+remotefunc CreateCharacterAccount(const account_id, const string:nickname[])
+{
     // Account ID must be filled.
     if (account_id == 0)
     {
@@ -201,24 +176,6 @@ remotefunc CreateCharacterAccount(const account_id, const string:nickname[]) {
 
     return 1;
     // return _CreatePlayerAccount(username, password, email);
-}
-
-ResetPlayerAccount(playerid)
-{
-    // Reset player account's ID.
-    PlayerAccount[playerid][AID] = 0;
-    // Reset player's character active.
-    PlayerAccount[playerid][CharacterActive] = -1;
-
-    // Reset each player character's account ID and character ID.
-    for (new c = 0; c < MAX_CHARACTERS_PER_ACCOUNT; c++)
-    {
-        PlayerData[playerid][c][AID] = 0;
-        PlayerData[playerid][c][CID] = 0;
-    }
-
-    // Remove player from logged in player's iteration.
-    Iter_Remove(LoggedInPlayers, playerid);
 }
 
 remotefunc bool:IsPlayerLoggedIn(playerid)
@@ -373,13 +330,13 @@ remotefunc LoadPlayerCharacter(playerid)
 
 remotefunc LogInPlayerAccount(playerid, const string:username[], const string:password[])
 {
-    #if !defined RUN_TESTS
-    // Check the playerid's connection.
-    if (!IsPlayerConnected(playerid))
-    {
-        return E_PLAYER_NOT_CONNECTED;
-    }
-    #endif
+    // #if !defined RUN_TESTS
+    // // Check the playerid's connection.
+    // if (!IsPlayerConnected(playerid))
+    // {
+    //     return E_PLAYER_NOT_CONNECTED;
+    // }
+    // #endif
 
     // Check IF the player has already logged in.
     if (IsPlayerLoggedIn(playerid))
@@ -422,13 +379,13 @@ remotefunc LogInPlayerAccount(playerid, const string:username[], const string:pa
 
 remotefunc LogOutFromPlayerAccount(playerid)
 {
-    #if defined RUN_TESTS
-    // Check the playerid's connection.
-    if (!IsPlayerConnected(playerid))
-    {
-        return E_PLAYER_NOT_CONNECTED;
-    }
-    #endif
+    // #if defined RUN_TESTS
+    // // Check the playerid's connection.
+    // if (!IsPlayerConnected(playerid))
+    // {
+    //     return E_PLAYER_NOT_CONNECTED;
+    // }
+    // #endif
 
     // Check IF the player has logged in.
     if (!IsPlayerLoggedIn(playerid))
@@ -472,5 +429,3 @@ remotefunc SavePlayerCharacterData(playerid)
     // Save the player current character's data.
     return _SavePlayerCharacterData(playerid);
 }
-
-#include <YSI_Coding/y_hooks>

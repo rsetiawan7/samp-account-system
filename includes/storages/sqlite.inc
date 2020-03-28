@@ -1,5 +1,7 @@
+#include <YSI_Core\y_debug>
+
 #if defined STORAGE_METHOD_INCLUDED
-    #error "One of storage method already defined. Please choose ONLY one method."
+    #error "You cannot include SQLite's storage method because one of storage method already defined. Please choose ONLY one method."
 #else
     #define STORAGE_METHOD_INCLUDED
 #endif
@@ -10,6 +12,9 @@ new
 
 InitAccountSystem()
 {
+    P:4("[SQLITE] InitAccountSystem called.");
+    db_debug_openfiles();
+
     // Read .db file.
     db_account = db_open("account-system.db");
 
@@ -88,8 +93,8 @@ InitAccountSystem()
         }
     }
 
-    // Return 0 IF success.
-    return 0;
+    // Return 1 IF success.
+    return 1;
 }
 
 CloseAccountSystem()
@@ -192,7 +197,8 @@ _LoadPlayerCharacter(playerid)
     return 0;
 }
 
-_CreatePlayerAccount(const username[], const password[], const email[]) {
+_CreatePlayerAccount(const username[], const password[], const email[])
+{
     const queryLen = MAX_ACCOUNT_NAME_LENGTH
                     + WHIRLPOOL_LENGTH
                     + MAX_SALT_LENGTH
@@ -205,7 +211,6 @@ _CreatePlayerAccount(const username[], const password[], const email[]) {
     static
         query[queryLen],
         salt[MAX_SALT_LENGTH + 1],
-        hashedPass[WHIRLPOOL_LENGTH + 1],
         bool:IsAvailable,
         DBResult:result;
 
