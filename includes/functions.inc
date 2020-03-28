@@ -5,10 +5,7 @@
 #define MAX_SALT_LENGTH             128
 #define MIN_PASSWORD_LENGTH         8
 #define MAX_PASSWORD_LENGTH         64
-
-// #if !defined isnull
-//     #define isnull(%1) ((!(%1[0])) || (((%1[0]) == '\1') && (!(%1[1]))))
-// #endif
+#define WHIRLPOOL_LENGTH            128
 
 // Trying to include y_iterate.
 #if !defined _INC_y_iterate
@@ -18,11 +15,6 @@
 // Trying to include y_remote.
 #if !defined _INC_y_remote
     #error "y_remote (YSI 5.x) is required."
-#endif
-
-// Trying to include hash-plugin with a few ways.
-#if !defined _hash_included
-    #error "Mellnik's hash-plugin is required. Get it by 'sampctl package install Mellnik/hash-plugin' or go to https://forum.sa-mp.com/showthread.php?t=496953 or https://github.com/Mellnik/hash-plugin"
 #endif
 
 // Include internal's error codes.
@@ -113,7 +105,21 @@ ResetPlayerAccount(playerid)
     Iter_Remove(LoggedInPlayers, playerid);
 }
 
-remotefunc CreatePlayerAccount(const string:username[], const string:password[], const string:email[])
+// WRAPPER FUNCTONS {
+
+IsPlayerLoggedIn(playerid)
+{
+    return localfunc INTL_IsPlayerLoggedIn(playerid);
+}
+
+SetPlayerData(playerid, const string:data[], const string:value[])
+{
+    return localfunc INTL_SetPlayerData(playerid, data, value);
+}
+
+// } WRAPPER FUNCTONS
+
+remotefunc INTL_CreatePlayerAccount(const string:username[], const string:password[], const string:email[])
 {
     // Debugging purpose.
     new string:params[MAX_PLAYER_NAME + MAX_PASSWORD_LENGTH + MAX_EMAIL_LENGTH + 1];
@@ -178,7 +184,7 @@ remotefunc CreateCharacterAccount(const account_id, const string:nickname[])
     // return _CreatePlayerAccount(username, password, email);
 }
 
-remotefunc bool:IsPlayerLoggedIn(playerid)
+remotefunc INTL_IsPlayerLoggedIn(playerid)
 {
     return PlayerAccount[playerid][AID] < 1 ? false : true;
 }
@@ -247,7 +253,7 @@ remotefunc GetPlayerData(playerid, const string:data[])
     return E_PLAYER_DATA_NAME_INVALID;
 }
 
-remotefunc SetPlayerData(playerid, const string:data[], const string:value[])
+remotefunc INTL_SetPlayerData(playerid, const string:data[], const string:value[])
 {
     // Check the playerid's connection.
     if (!IsPlayerConnected(playerid))
@@ -328,7 +334,7 @@ remotefunc LoadPlayerCharacter(playerid)
     return _LoadPlayerCharacter(playerid);
 }
 
-remotefunc LogInPlayerAccount(playerid, const string:username[], const string:password[])
+remotefunc INTL_LogInPlayerAccount(playerid, const string:username[], const string:password[])
 {
     // #if !defined RUN_TESTS
     // // Check the playerid's connection.
@@ -339,6 +345,7 @@ remotefunc LogInPlayerAccount(playerid, const string:username[], const string:pa
     // #endif
 
     // Check IF the player has already logged in.
+    P:4("LogInPlayerAccount -> IsPlayerLoggedIn? %d", IsPlayerLoggedIn(playerid));
     if (IsPlayerLoggedIn(playerid))
     {
         return E_PLAYER_ALREADY_LOGGED_IN;
@@ -377,7 +384,7 @@ remotefunc LogInPlayerAccount(playerid, const string:username[], const string:pa
     return _LoadPlayerAccount(playerid, username);
 }
 
-remotefunc LogOutFromPlayerAccount(playerid)
+remotefunc INTL_LogOutFromPlayerAccount(playerid)
 {
     // #if defined RUN_TESTS
     // // Check the playerid's connection.
@@ -395,7 +402,7 @@ remotefunc LogOutFromPlayerAccount(playerid)
 
     // Reset player's account.
     ResetPlayerAccount(playerid);
-    return 0;
+    return 1;
 }
 
 remotefunc SavePlayerCharacterData(playerid)
