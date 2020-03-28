@@ -9,6 +9,24 @@
 		"maddinat0r/sscanf",
 		"pawn-lang/YSI-Includes@5.x"
 	],
+	"builds": [
+    {
+      "name": "dev",
+      "args": ["-;+", "-(+", "-d3", "-Z+"],
+      "constants": {
+				"_DEBUG": "4",
+        "MAX_PLAYERS": "10"
+      }
+    },
+    {
+      "name": "live",
+      "args": ["-;+", "-(+", "-O2", "-Z+"],
+      "constants": {
+				"_DEBUG": "0",
+        "MAX_PLAYERS": "200"
+      }
+    }
+  ],
 	"runtime": {
 		"version": "0.3.7",
 		"mode": "y_testing",
