@@ -5,40 +5,46 @@
 	#error "y_remote (YSI 5.x) is required to use this script."
 #endif
 
-#if defined ACCOUNT_SYSTEM_ERRORS_INCLUDED
-  #endinput
-#endif
-#define ACCOUNT_SYSTEM_ERRORS_INCLUDED
+#include "includes/errors.inc"
 
-#define E_USERNAME_REQUIRED             -10001
-#define E_PASSWORD_REQUIRED             -10002
-#define E_INSUFFICIENT_PASSWORD_LENGTH  -10003
-#define E_PLAYER_NOT_CONNECTED          -10004
-#define E_INVALID_CREDENTIAL            -10005
-#define E_EXCEED_PASSWORD_LENGTH				-10006
-#define E_USERNAME_EXIST								-10007
-#define E_EMAIL_REQUIRED								-10008
-#define E_ACCOUNT_ID_REQUIRED						-10009
-#define E_NICKNAME_REQUIRED							-10010
-#define E_EMAIL_EXIST   								-10011
-#define E_PLAYER_NOT_LOGGED_IN          -20001
-#define E_PLAYER_ALREADY_LOGGED_IN      -20002
-#define E_PLAYER_CHARACTER_INVALID      -20003
-#define E_PLAYER_DATA_NAME_INVALID      -20004
+// CALLBACKS
 
-remotefunc bool:IsPlayerLoggedIn(playerid);
-remotefunc bool:IsPlayerCharacterSelected(playerid);
-remotefunc CreatePlayerAccount(const string:username[], const string:password[], const string:email[]);
-remotefunc CreateCharacterAccount(const account_id, const string:nickname[]);
-// remotefunc LoadPlayerData(playerid);
-remotefunc LogInPlayerAccount(playerid, const string:username[], const string:password[]);
-remotefunc LoadPlayerCharacter(playerid);
-remotefunc SetPlayerData(playerid, const string:data[], const string:value[]);
-remotefunc LogOutFromPlayerAccount(playerid);
-remotefunc SavePlayerCharacterData(playerid);
 
-// stock LogIn(playerid, username[], password[])
-// {
-// 	new result = localfunc LogInPlayerAccount(playerid, username, password);
-// 	return result;
-// }
+
+// FUNCTIONS
+
+remotefunc stock bool:INTL_IsPlayerLoggedIn(playerid);
+remotefunc stock INTL_CreatePlayerAccount(const string:username[], const string:password[], const string:email[]);
+remotefunc stock INTL_LoadPlayerData(playerid);
+remotefunc stock INTL_LogInPlayerAccount(playerid, const string:username[], const string:password[]);
+remotefunc stock INTL_SetPlayerData(playerid, const string:data[], const string:value[]);
+remotefunc stock INTL_LogOutFromPlayerAccount(playerid);
+// remotefunc bool:IsPlayerCharacterSelected(playerid);
+// remotefunc CreateCharacterAccount(const account_id, const string:nickname[]);
+// remotefunc LoadPlayerCharacter(playerid);
+// remotefunc SavePlayerCharacterData(playerid);
+
+stock bool:IsPlayerLoggedIn(playerid)
+{
+	return broadcastfunc INTL_IsPlayerLoggedIn(playerid);
+}
+
+stock CreatePlayerAccount(const string:username[], const string:password[], const string:email[])
+{
+	return broadcastfunc INTL_CreatePlayerAccount(username, password, email);
+}
+
+stock LogInPlayerAccount(playerid, const string:username[], const string:password[])
+{
+	return broadcastfunc INTL_LogInPlayerAccount(playerid, username, password);
+}
+
+stock LogOutFromPlayerAccount(playerid)
+{
+	return broadcastfunc INTL_LogOutFromPlayerAccount(playerid);
+}
+
+stock LoadPlayerData(playerid)
+{
+	return broadcastfunc INTL_LoadPlayerData(playerid);
+}
