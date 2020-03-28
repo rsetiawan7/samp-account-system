@@ -2,7 +2,7 @@
 	"user": "rsetiawan7",
 	"repo": "account-system",
 	"entry": "account-system.pwn",
-	"output": "account-system.amx",
+	"output": "../account-system.amx",
 	"dependencies": [
 		"sampctl/samp-stdlib",
 		"Mellnik/hash-plugin",
