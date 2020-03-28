@@ -1,9 +1,6 @@
 // SA-MP Core
 #include <a_samp>
 
-// Debug level. Comment line below to disable debugging.
-#define _DEBUG 4
-
 // Disable y_malloc heap allocation
 #define YSI_YES_HEAP_MALLOC
 
@@ -11,7 +8,6 @@
 #define USE_SQLITE
 
 // Third-party includes
-#include <hash>
 #include <sscanf2>
 #include <YSI_Coding\y_remote>
 #include <YSI_Server\y_colours>

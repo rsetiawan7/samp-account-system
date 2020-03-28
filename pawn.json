@@ -39,6 +39,11 @@
 		"mapname": "San Andreas",
 		"weburl": "www.sa-mp.com",
 		"gamemodetext": "Unknown",
+		"plugins": [
+			"sscanf",
+			"crashdetect",
+			"Whirlpool"
+		],
 		"announce": true,
 		"lanmode": false,
 		"query": true,
