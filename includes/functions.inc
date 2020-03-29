@@ -9,19 +9,27 @@
 
 // Trying to include y_iterate.
 #if !defined _INC_y_iterate
+    #tryinclude <YSI_Data\y_iterate>
+#endif
+#if !defined _INC_y_iterate
     #error "y_iterate (YSI 5.x) is required."
 #endif
 
 // Trying to include y_remote.
 #if !defined _INC_y_remote
+	#tryinclude <YSI_Coding\y_remote>
+#endif
+#if !defined _INC_y_remote
     #error "y_remote (YSI 5.x) is required."
 #endif
 
+// Defines some remotefunc that the functions are available in somewhere scripts.
+remotefunc stock void:INTL_OnPlayerLoggedIn(playerid, account_id);
+remotefunc stock void:INTL_OnPlayerLoginFailed(playerid, attempt);
+remotefunc stock void:INTL_OnPlayerLoggedOut(playerid, account_id);
+
 // Include internal's error codes.
 #include "includes/errors.inc"
-
-// Include foreign functions.
-// #include "includes/foreigns.inc"
 
 // Enumeration for accout's player
 enum e_PlayerAccount
@@ -66,13 +74,16 @@ enum e_PlayerCharacter
 };
 
 new
+    // Store global salt's password.
     gSalt[MAX_SALT_LENGTH + 1],
     // Create an array to store account's player data.
     PlayerAccount[MAX_PLAYERS][e_PlayerAccount],
     // Create an array to store character's player data.
     PlayerData[MAX_PLAYERS][MAX_CHARACTERS_PER_ACCOUNT][e_PlayerCharacter],
     // Iteration for logged in players.
-    Iterator:LoggedInPlayers<MAX_PLAYERS>;
+    Iterator:LoggedInPlayers<MAX_PLAYERS>,
+    // Store player's attempt login amount.
+    gAttemptLogin[MAX_PLAYERS];
 
 #include "includes/utilities.inc"
 
@@ -89,6 +100,8 @@ new
 
 ResetPlayerAccount(playerid)
 {
+    // Reset player's attempt login.
+    gAttemptLogin[playerid] = 0;
     // Reset player account's ID.
     PlayerAccount[playerid][AID] = 0;
     // Reset player's character active.
@@ -106,6 +119,14 @@ ResetPlayerAccount(playerid)
 }
 
 // WRAPPER FUNCTONS {
+
+void:BroadcastPlayerLoginFailed(playerid)
+{
+    // Increase amount of attempt login.
+    gAttemptLogin[playerid]++;
+    // Broadcast the function.
+    broadcastfunc INTL_OnPlayerLoginFailed(playerid, gAttemptLogin[playerid]);
+}
 
 IsPlayerLoggedIn(playerid)
 {
@@ -162,8 +183,18 @@ remotefunc INTL_CreatePlayerAccount(const string:username[], const string:passwo
         return E_EXCEED_PASSWORD_LENGTH;
     }
 
+    // Trying to create an account by calling storage method's function.
     P:4("CreatePlayerAccount -> passed all criteria.");
-    return _CreatePlayerAccount(username, password, email);
+    new CreateAccount = _CreatePlayerAccount(username, password, email);
+
+    // Return an error the return value is not 1.
+    if (CreateAccount != 1)
+    {
+        P:4("CreatePlayerAccount -> failed. (error code: %d)", CreateAccount);
+        return E_CREATE_ACCOUNT_FAILED;
+    }
+
+    return CreateAccount;
 }
 
 remotefunc CreateCharacterAccount(const account_id, const string:nickname[])
@@ -370,18 +401,33 @@ remotefunc INTL_LogInPlayerAccount(playerid, const string:username[], const stri
     }
 
     // Password's length must be less than MAX_PASSWORD_LENGTH characters.
-    if (strlen(password) > MAX_PASSWORD_LENGTH)
-    {
-        return E_EXCEED_PASSWORD_LENGTH;
-    }
+    // if (strlen(password) > MAX_PASSWORD_LENGTH)
+    // {
+    //     return E_EXCEED_PASSWORD_LENGTH;
+    // }
 
     // Check username and password match.
-    if (!IsPasswordValid(username, password))
+    new bool:IsValid = IsPasswordValid(username, password);
+    if (!IsValid)
     {
+        P:4("LogInPlayerAccount -> IsPasswordValid return value: %d", IsValid);
+        BroadcastPlayerLoginFailed(playerid);
         return E_INVALID_CREDENTIAL;
     }
 
-    return _LoadPlayerAccount(playerid, username);
+    // Trying to load player's account data.
+    new LoadPlayerData = _LoadPlayerAccount(playerid, username);
+    P:4("LogInPlayerAccount -> LoadPlayerData return value: %d", LoadPlayerData);
+
+    // Return an error if something error happened while loading a player data.
+    if (LoadPlayerData != 1)
+    {
+        return E_LOGIN_FAILED;
+    }
+
+    // Broadcast-call a function to OnPlayerLoggedIn.
+    broadcastfunc INTL_OnPlayerLoggedIn(playerid, PlayerAccount[playerid][AID]);
+    return LoadPlayerData;
 }
 
 remotefunc INTL_LogOutFromPlayerAccount(playerid)
@@ -400,8 +446,14 @@ remotefunc INTL_LogOutFromPlayerAccount(playerid)
         return E_PLAYER_NOT_LOGGED_IN;
     }
 
+    // Get Account ID before resetted.
+    new account_id = PlayerAccount[playerid][AID];
+
     // Reset player's account.
     ResetPlayerAccount(playerid);
+
+    // Broadcast-call a function to OnPlayerLoggedOut.
+    broadcastfunc INTL_OnPlayerLoggedOut(playerid, account_id);
     return 1;
 }
 

@@ -6,6 +6,7 @@
 	"dependencies": [
 		"sampctl/samp-stdlib",
 		"maddinat0r/sscanf",
+		"IllidanS4/strlib",
 		"pawn-lang/YSI-Includes@5.x"
 	],
 	"builds": [

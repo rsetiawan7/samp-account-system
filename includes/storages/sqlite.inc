@@ -1,3 +1,4 @@
+#include <strlib>
 #include <YSI_Core\y_debug>
 
 #if defined STORAGE_METHOD_INCLUDED
@@ -134,11 +135,13 @@ bool:IsPasswordValid(const username[], const password[])
         HashedPass[WHIRLPOOL_LENGTH + 1],
         // Hashed password from input password, global salt, and its own salt.
         CurrentHash[WHIRLPOOL_LENGTH + 1],
-        DBResult:result;
+        DBResult:result,
+        bool:UserAvailable;
 
-    P:4("[SQLITE] IsPasswordValid -> is username available: %d", IsUsernameAvailable(username));
+    UserAvailable = IsUsernameAvailable(username);
+    P:4("[SQLITE] IsPasswordValid -> is username available: %d", UserAvailable);
     // Check username availability.
-    if (!IsUsernameAvailable(username))
+    if (!UserAvailable)
     {
         return false;
     }
@@ -163,9 +166,12 @@ bool:IsPasswordValid(const username[], const password[])
     CurrentHash = HashPassword(password, PrivateSalt);
     P:4("[SQLITE] IsPasswordValid -> hashed input password: %s", CurrentHash);
 
+    // Compare the hash.
+    new bool:SamePassword = isequal(CurrentHash, HashedPass);
+
     // Verify the hash by compare the string.
-    P:4("[SQLITE] IsPasswordValid -> hashed input password: %s", (strcmp(CurrentHash, HashedPass) == 0 ? "true" : "false"));
-    return (strcmp(CurrentHash, HashedPass) == 0);
+    P:4("[SQLITE] IsPasswordValid -> hashed input password: %d", SamePassword);
+    return SamePassword;
 }
 
 _LoadPlayerCharacter(playerid)
