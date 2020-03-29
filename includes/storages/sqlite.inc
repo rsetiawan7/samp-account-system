@@ -220,6 +220,45 @@ _LoadPlayerCharacter(playerid)
     return 0;
 }
 
+_GetAccountID(const username[])
+{
+    const queryLen = MAX_ACCOUNT_NAME_LENGTH + 128;
+
+    P:4("_GetAccountID called. Params: %s", username);
+
+    // Store query result.
+    static
+        query[queryLen],
+        AccountID,
+        bool:IsAvailable,
+        DBResult:result;
+
+    // Format the query and escape the string to avoid SQL injection.
+    format (query, sizeof(query), "SELECT `id` FROM `accounts` WHERE `name` = '%q';", username);
+    P:4("_GetAccountID -> query to check available user: %s", query);
+    // Do the query.
+    result = db_query(db_account, query);
+    P:4("_GetAccountID -> query result: %i rows", db_num_rows(result));
+    // Check if the query result return a valid result.
+    IsAvailable = db_num_rows(result) < 1 ? false : true;
+
+    // Return E_USERNAME_NOT_FOUND IF query result not.
+    if (!IsAvailable)
+    {
+        // Frees the result
+        db_free_result(result);
+        return E_USERNAME_NOT_FOUND;
+    }
+
+    // Assign player account's ID set to last sequential to make sure required data is loaded properly.
+    AccountID = db_get_field_assoc_int(result, "id");
+
+    // Frees the result
+    db_free_result(result);
+
+    return AccountID;
+}
+
 _CreatePlayerAccount(const username[], const password[], const email[])
 {
     const queryLen = MAX_ACCOUNT_NAME_LENGTH
@@ -305,7 +344,7 @@ _LoadPlayerAccount(playerid, const username[])
     {
         // Frees the result
         db_free_result(result);
-        return 0;
+        return E_USERNAME_NOT_FOUND;
     }
     
     // Assign player account's data to variable.
